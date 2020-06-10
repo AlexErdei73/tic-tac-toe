@@ -1,0 +1,18 @@
+h1 {
+    width: 20%;
+    margin: auto;
+    padding-left: 11rem;
+}
+
+.gameBoard {
+    width: 300px;
+    margin: auto;
+    border: 5px solid #383838;
+}
+
+.field {
+    display: inline-block;
+    width: 98px;
+    height: 98px;
+    border: 1px solid #505050;
+}
