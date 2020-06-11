@@ -39,17 +39,56 @@ const gameBoard = function(){
     return {isFieldEmpty, setField, getField};
 }();
 
-gameBoard.setField(0, 0, 'x');
-gameBoard.setField(2, 1, 'o');
-let str = '';
-for (let i = 0; i <= 2; i++) {
-    str = '';
-    for (let j = 0; j <= 2; j++) {
-        if (gameBoard.isFieldEmpty(j, i)) {
-            str = str + '_';
+const displayControl = function(){
+    const board = document.querySelector('.gameBoard');
+
+    function isBoardReady(){
+        if (board.childElementCount == 0) {
+            return false;
         } else {
-            str = str + gameBoard.getField(j, i);
+            return true;
         }
     }
-    console.log(str);
-}
+
+    function createField(col, row){
+        const div = document.createElement('div');
+        div.classList.add('field');
+        div.setAttribute('row',row);
+        div.setAttribute('col',col);
+        board.appendChild(div);
+        console.log(div);
+    }
+
+    function createBoard(){
+        if (isBoardReady()) return
+        for (let row = 0; row <= 2; row++) {
+            for (let col = 0; col <= 2; col++) {
+                createField(col, row);
+            }
+        }
+    }
+
+    function render(board){
+        if (!isBoardReady()) {
+            createBoard();
+        }
+        const divs = document.querySelectorAll('.field');
+        divs.forEach(div => {
+            const col = div.getAttribute('col');
+            const row = div.getAttribute('row');
+            const char = board.getField(col, row);
+            div.textContent = char;
+            if (char == 'x') {
+                div.style = 'color: darkred';
+            } else {
+                div.style = 'color: olive';
+            }
+        })
+    }
+
+    return{render};
+}();
+
+gameBoard.setField(0, 0, 'x');
+gameBoard.setField(2, 1, 'o');
+displayControl.render(gameBoard);
