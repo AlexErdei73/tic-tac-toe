@@ -1,18 +1,29 @@
+body {
+    background-color: lightgreen;
+}
+
+
 h1 {
     width: 20%;
-    margin: auto;
-    padding-left: 11rem;
+    margin: 2% auto;
+    padding-left: 10%;
+    color: darkgreen;
 }
 
 .gameBoard {
     width: 300px;
-    margin: auto;
-    border: 5px solid #383838;
+    height: 300px;
+    margin: 2% auto;
+    border: 5px solid darkgreen;
+    color: darkgreen;
+    text-align: center;
+    font-size: 60px;
+    line-height: 98px;
 }
 
 .field {
-    display: inline-block;
     width: 98px;
     height: 98px;
-    border: 1px solid #505050;
+    border: 1px solid darkgreen;
+    float: left;
 }
