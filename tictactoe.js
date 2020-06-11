@@ -16,7 +16,7 @@ const gameBoard = function(){
 
     function isFieldEmpty(col, row){
         let result = false;
-        if (isFieldExistant) {
+        if (isFieldExistant(col, row)) {
             if (board[row][col] == '') {
                 result = true;
             }
@@ -32,12 +32,57 @@ const gameBoard = function(){
     }
 
     function getField(col, row){
-        if (!isFieldExistant) return
+        if (!isFieldExistant(col, row)) return 
         return board[row][col];
     }
 
-    return {isFieldEmpty, setField, getField};
+    function findWinner(){
+      const  directionVectors = [{'col': 1, 'row':  0},
+                                {'col': 1, 'row':  1},
+                                {'col': 0, 'row':  1},
+                                {'col': -1, 'row':  1},
+                                {'col': -1, 'row':  0},
+                                {'col': -1, 'row':  -1},
+                                {'col': 0, 'row':  -1},
+                                {'col': 1, 'row':  -1}];
+      let char = '';
+      let newcol = 0;
+      let newrow = 0;
+      let count = 0;
+      let winner = '';
+      let isBoardFull = true;
+      for (let col = 0; col <= 2; col++){
+          for (let row = 0; row <= 2; row++){
+              char = getField(col, row);
+              if (char != '') {
+                 for (let i = 0; i < 8; i++){
+                     count = 0;
+                     newcol = col;
+                     newrow = row;
+                     while (count < 3 && char == getField(newcol, newrow)){
+                         newcol = newcol + directionVectors[i].col;
+                         newrow = newrow + directionVectors[i].row;
+                         count++;
+                     }
+                     if (count == 3) {
+                         winner = char;
+                     }
+                 }
+              } else {
+                  isBoardFull = false;
+              }
+          } 
+      }
+      if (isBoardFull && winner == '') {
+          return 'tie';
+      } else {
+          return winner;
+      }
+    }
+
+    return {isFieldEmpty, setField, getField, findWinner};
 }();
+
 
 const displayControl = function(){
     const board = document.querySelector('.gameBoard');
@@ -105,6 +150,7 @@ const displayControl = function(){
     return{render};
 }();
 
+
 function player(name, char){
     let score = 0;
     let isNext = false;
@@ -124,6 +170,7 @@ function player(name, char){
     return {name, char, incScore, delScore, getScore};
 }
 
+
 const game = function(){
     const playerA = player('Alex','x');
     const playerB = player('Agi','o');
@@ -137,6 +184,14 @@ const game = function(){
         } else {
             playerNext = playerA;
         }
+        const winner = gameBoard.findWinner();
+        if (winner != '') {
+            gameOver(winner);
+        }
+    }
+
+    function gameOver(winner){
+        console.log(winner);
     }
 
     function nextPlayer() {
@@ -145,3 +200,7 @@ const game = function(){
 
     return {swapPlayer, nextPlayer}
 }();
+
+console.log(gameBoard.getField(-1, 0));
+console.log(gameBoard.getField(0, 0));
+console.log(gameBoard.getField(0, -1));
