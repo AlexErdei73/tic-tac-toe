@@ -68,6 +68,15 @@ const displayControl = function(){
         }
     }
 
+    function styleField(col, row, char, div){
+        div.textContent = char;
+        if (char == 'x') {
+            div.style = 'color: darkred';
+        } else {
+            div.style = 'color: olive';
+        }
+    }
+
     function render(board){
         if (!isBoardReady()) {
             createBoard();
@@ -77,12 +86,7 @@ const displayControl = function(){
             const col = div.getAttribute('col');
             const row = div.getAttribute('row');
             const char = board.getField(col, row);
-            div.textContent = char;
-            if (char == 'x') {
-                div.style = 'color: darkred';
-            } else {
-                div.style = 'color: olive';
-            }
+            styleField(col, row, char, div);
         })
     }
 
@@ -90,16 +94,54 @@ const displayControl = function(){
         const div = e.target;
         const row = div.getAttribute('row');
         const col = div.getAttribute('col');
+        const char = game.nextPlayer().char;
         if (gameBoard.isFieldEmpty(col, row)) {
-            gameBoard.setField(col, row, 'x');
-            div.textContent = 'x';
-            div.style = 'color: darkred';
+            gameBoard.setField(col, row, char);
+            styleField(col, row, char, div);
+            game.swapPlayer();
         }
     }
 
     return{render};
 }();
 
-gameBoard.setField(0, 0, 'x');
-gameBoard.setField(2, 1, 'o');
-displayControl.render(gameBoard);
+function player(name, char){
+    let score = 0;
+    let isNext = false;
+
+    function incScore(){
+        score++;
+    }
+
+    function delScore(){
+        score = 0;
+    }
+
+    function getScore(){
+        return score;
+    }
+
+    return {name, char, incScore, delScore, getScore};
+}
+
+const game = function(){
+    const playerA = player('Alex','x');
+    const playerB = player('Agi','o');
+    let playerNext = playerA;
+
+    displayControl.render(gameBoard);
+
+    function swapPlayer(){
+        if (playerNext == playerA) {
+            playerNext = playerB;
+        } else {
+            playerNext = playerA;
+        }
+    }
+
+    function nextPlayer() {
+        return playerNext;
+    }
+
+    return {swapPlayer, nextPlayer}
+}();
