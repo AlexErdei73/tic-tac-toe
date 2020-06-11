@@ -56,7 +56,7 @@ const displayControl = function(){
         div.setAttribute('row',row);
         div.setAttribute('col',col);
         board.appendChild(div);
-        console.log(div);
+        div.addEventListener('click', onClick);
     }
 
     function createBoard(){
@@ -84,6 +84,17 @@ const displayControl = function(){
                 div.style = 'color: olive';
             }
         })
+    }
+
+    function onClick(e){
+        const div = e.target;
+        const row = div.getAttribute('row');
+        const col = div.getAttribute('col');
+        if (gameBoard.isFieldEmpty(col, row)) {
+            gameBoard.setField(col, row, 'x');
+            div.textContent = 'x';
+            div.style = 'color: darkred';
+        }
     }
 
     return{render};
