@@ -118,11 +118,11 @@ const displayControl = function(){
     }
 
     function styleField(col, row, char, div){
-        div.textContent = char;
+        div.textContent = char.toUpperCase();
         if (char == 'x') {
-            div.style = 'color: darkred';
+            div.style = 'text-shadow:0 0 0 darkred';
         } else {
-            div.style = 'color: olive';
+            div.style = 'text-shadow:0 0 0 olive';
         }
     }
 
@@ -158,9 +158,20 @@ const displayControl = function(){
 
     function resetGame(){
         isGameOver = false;
+        deleteMessage();
     }
 
-    return{render, stopGame, resetGame};
+    function showMessage(message){
+        const div = document.querySelector('.message');
+        div.textContent = message;
+    }
+
+    function deleteMessage(){
+        const div = document.querySelector('.message');
+        div.textContent = '';
+    }
+
+    return{render, stopGame, resetGame, showMessage};
 }();
 
 
@@ -203,7 +214,14 @@ const game = function(){
     }
 
     function gameOver(winner){
+        let message = '';
         displayControl.stopGame();
+        if (winner == 'tie') {
+            message = 'It is a tie!';
+        } else {
+            message = playerNext.name + ' is the winner!';
+        }
+        displayControl.showMessage(message);
     }
 
     function nextPlayer() {

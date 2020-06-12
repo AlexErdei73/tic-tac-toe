@@ -1,7 +1,11 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("font/Montserrat-Regular.ttf");
+  }
+
 body {
     background-color: lightgreen;
 }
-
 
 h1 {
     width: 20%;
@@ -13,17 +17,69 @@ h1 {
 .gameBoard {
     width: 300px;
     height: 300px;
-    margin: 2% auto;
+    margin: 20px 0;
+    margin-left: 10px;
     border: 5px solid darkgreen;
-    color: darkgreen;
-    text-align: center;
     font-size: 60px;
     line-height: 98px;
+    font-family: 'Montserrat',serif;
+    float: left;
 }
 
 .field {
     width: 98px;
     height: 98px;
     border: 1px solid darkgreen;
+    color: transparent;
     float: left;
+}
+
+.message{
+    width: 300px;
+    height: 50px;
+    margin: auto;
+    border: 2px solid darkgreen;
+    line-height: 50px;
+    clear: both;
+}
+
+.player {
+    width: 100px;
+    margin: 5px;
+    float: left;
+}
+
+input {
+    width: 100px;
+    margin: 10px 0;
+    background-color: lightgreen;
+    border: 2px solid darkgreen;
+}
+
+.display {
+    width: 550px;
+    margin: auto;
+    color: darkgreen;
+    text-align: center;
+    font-size: 20px;
+    font-style: bold;
+}
+
+#a {
+    color: darkred;
+}
+
+#b {
+    color: olive;
+}
+
+button {
+    width: 100px;
+    height: 50px;
+    background-color: lightgreen;
+    color: darkgreen;
+    font-size: 20px;
+    font-style: bold;
+    border-color: darkgreen;
+    margin: 5px;
 }

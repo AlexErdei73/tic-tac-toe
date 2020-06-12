@@ -7,7 +7,21 @@
     </head>
     <body>
         <h1>Tic-Tac-Toe</h1>
-        <div class="gameBoard">
+        <div class="display">
+            <div class="player" id="a">
+                <div class="name" id="a">Player A</div>
+                <input type="text" class="name" id="a">
+                <div class="score" id="a">0</div>
+                <button type="button">START</button>
+            </div>
+            <div class="gameBoard"></div>
+            <div class="player" id="b">
+                <div class="name" id="b">Player B</div>
+                <input type="text" class="name" id="b">
+                <div class="score" id="b">0</div>
+                <button type="button">RESET</button>
+            </div>
+            <div class="message"></div>
         </div>
         <script src="tictactoe.js"></script>
     </body>
