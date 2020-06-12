@@ -37,47 +37,50 @@ const gameBoard = function(){
     }
 
     function findWinner(){
-      const  directionVectors = [{'col': 1, 'row':  0},
-                                {'col': 1, 'row':  1},
-                                {'col': 0, 'row':  1},
-                                {'col': -1, 'row':  1},
-                                {'col': -1, 'row':  0},
-                                {'col': -1, 'row':  -1},
-                                {'col': 0, 'row':  -1},
-                                {'col': 1, 'row':  -1}];
-      let char = '';
-      let newcol = 0;
-      let newrow = 0;
-      let count = 0;
-      let winner = '';
-      let isBoardFull = true;
-      for (let col = 0; col <= 2; col++){
-          for (let row = 0; row <= 2; row++){
-              char = getField(col, row);
-              if (char != '') {
-                 for (let i = 0; i < 8; i++){
-                     count = 0;
-                     newcol = col;
-                     newrow = row;
-                     while (count < 3 && char == getField(newcol, newrow)){
-                         newcol = newcol + directionVectors[i].col;
-                         newrow = newrow + directionVectors[i].row;
-                         count++;
-                     }
-                     if (count == 3) {
-                         winner = char;
-                     }
-                 }
-              } else {
-                  isBoardFull = false;
-              }
-          } 
-      }
-      if (isBoardFull && winner == '') {
-          return 'tie';
-      } else {
-          return winner;
-      }
+
+        const  directionVectors =  [{'col': 1, 'row':  0},
+                                    {'col': 1, 'row':  1},
+                                    {'col': 0, 'row':  1},
+                                    {'col': -1, 'row':  1},
+                                    {'col': -1, 'row':  0},
+                                    {'col': -1, 'row':  -1},
+                                    {'col': 0, 'row':  -1},
+                                    {'col': 1, 'row':  -1}];
+
+        let char = '';
+        let newcol = 0;
+        let newrow = 0;
+        let count = 0;
+        let winner = '';
+        let isBoardFull = true;
+
+        for (let col = 0; col <= 2; col++){
+            for (let row = 0; row <= 2; row++){
+                char = getField(col, row);
+                if (char != '') {
+                    for (let i = 0; i < 8; i++){
+                        count = 0;
+                        newcol = col;
+                        newrow = row;
+                        while (count < 3 && char == getField(newcol, newrow)){
+                            newcol = newcol + directionVectors[i].col;
+                            newrow = newrow + directionVectors[i].row;
+                            count++;
+                        }
+                        if (count == 3) {
+                            winner = char;
+                        }
+                    }
+                } else {
+                    isBoardFull = false;
+                }
+            } 
+        }
+        if (isBoardFull && winner == '') {
+            return 'tie';
+        } else {
+            return winner;
+        }
     }
 
     return {isFieldEmpty, setField, getField, findWinner};
@@ -86,6 +89,7 @@ const gameBoard = function(){
 
 const displayControl = function(){
     const board = document.querySelector('.gameBoard');
+    let isGameOver = false;
 
     function isBoardReady(){
         if (board.childElementCount == 0) {
@@ -136,6 +140,7 @@ const displayControl = function(){
     }
 
     function onClick(e){
+        if (isGameOver) return
         const div = e.target;
         const row = div.getAttribute('row');
         const col = div.getAttribute('col');
@@ -147,7 +152,15 @@ const displayControl = function(){
         }
     }
 
-    return{render};
+    function stopGame(){
+        isGameOver = true;
+    }
+
+    function resetGame(){
+        isGameOver = false;
+    }
+
+    return{render, stopGame, resetGame};
 }();
 
 
@@ -179,19 +192,18 @@ const game = function(){
     displayControl.render(gameBoard);
 
     function swapPlayer(){
-        if (playerNext == playerA) {
-            playerNext = playerB;
-        } else {
-            playerNext = playerA;
-        }
         const winner = gameBoard.findWinner();
         if (winner != '') {
             gameOver(winner);
-        }
+        } else if (playerNext == playerA) {
+                playerNext = playerB;
+            } else {
+                playerNext = playerA;
+            }
     }
 
     function gameOver(winner){
-        console.log(winner);
+        displayControl.stopGame();
     }
 
     function nextPlayer() {
@@ -200,7 +212,3 @@ const game = function(){
 
     return {swapPlayer, nextPlayer}
 }();
-
-console.log(gameBoard.getField(-1, 0));
-console.log(gameBoard.getField(0, 0));
-console.log(gameBoard.getField(0, -1));
