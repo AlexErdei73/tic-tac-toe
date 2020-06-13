@@ -1,8 +1,7 @@
 const gameBoard = function(){
 
-    let board = [['','',''],
-                 ['','',''],
-                 ['','','']];
+    let board;
+    erase();
 
     function isFieldExistant(col, row){
         let result = false;
@@ -83,13 +82,32 @@ const gameBoard = function(){
         }
     }
 
-    return {isFieldEmpty, setField, getField, findWinner};
+    function erase(){
+        board = [['','',''],
+                 ['','',''],
+                 ['','','']];
+        console.table(board);
+    }
+
+    return {isFieldEmpty, setField, getField, findWinner, erase};
 }();
 
 
 const displayControl = function(){
     const board = document.querySelector('.gameBoard');
+    const btnStart = document.querySelector('#start');
+    const btnReset = document.querySelector('#reset');
+    const msg = document.querySelector('.message');
+    const inputA = document.querySelector('input#a');
+    const inputB = document.querySelector('input#b');
+    const divScoreA = document.querySelector('.score#a');
+    const divScoreB = document.querySelector('.score#b');
+    const divNameA = document.querySelector('.name#a');
+    const divNameB = document.querySelector('.name#b');
     let isGameOver = false;
+
+    btnStart.addEventListener('click', onClickStart);
+    btnReset.addEventListener('click', onClickReset);
 
     function isBoardReady(){
         if (board.childElementCount == 0) {
@@ -162,16 +180,37 @@ const displayControl = function(){
     }
 
     function showMessage(message){
-        const div = document.querySelector('.message');
-        div.textContent = message;
+        msg.textContent = message;
     }
 
     function deleteMessage(){
-        const div = document.querySelector('.message');
-        div.textContent = '';
+        msg.textContent = '';
     }
 
-    return{render, stopGame, resetGame, showMessage};
+    function showScores(scoreA, scoreB){
+        divScoreA.textContent = scoreA.toString();
+        divScoreB.textContent = scoreB.toString();
+    }
+
+    function onClickStart(){
+        gameBoard.erase();
+        render(gameBoard);
+        resetGame();
+    }
+
+    function onClickReset(){
+        const nameA = inputA.value;
+        const nameB = inputB.value;
+        game.reset(nameA, nameB);
+        onClickStart();
+    }
+
+    function showNames(nameA, nameB){
+        divNameA.textContent = nameA;
+        divNameB.textContent = nameB;
+    }
+
+    return {render, stopGame, resetGame, showMessage, showScores, showNames};
 }();
 
 
@@ -196,8 +235,8 @@ function player(name, char){
 
 
 const game = function(){
-    const playerA = player('Alex','x');
-    const playerB = player('Agi','o');
+    const playerA = player('Player A','x');
+    const playerB = player('Player B','o');
     let playerNext = playerA;
 
     displayControl.render(gameBoard);
@@ -213,6 +252,10 @@ const game = function(){
             }
     }
 
+    function showScores(){
+        displayControl.showScores(playerA.getScore(), playerB.getScore());
+    }
+
     function gameOver(winner){
         let message = '';
         displayControl.stopGame();
@@ -220,6 +263,8 @@ const game = function(){
             message = 'It is a tie!';
         } else {
             message = playerNext.name + ' is the winner!';
+            playerNext.incScore();
+            showScores();
         }
         displayControl.showMessage(message);
     }
@@ -228,5 +273,16 @@ const game = function(){
         return playerNext;
     }
 
-    return {swapPlayer, nextPlayer}
+    function reset(nameA, nameB){
+        if (nameA != nameB && nameA != '' && nameB != '') {
+            playerA.name = nameA;
+            playerB.name = nameB;
+            displayControl.showNames(playerA.name, playerB.name);
+        }
+        playerA.delScore();
+        playerB.delScore();
+        showScores();
+    }
+
+    return {swapPlayer, nextPlayer, reset};
 }();

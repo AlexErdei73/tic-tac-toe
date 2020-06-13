@@ -83,3 +83,8 @@ button {
     border-color: darkgreen;
     margin: 5px;
 }
+
+button:hover {
+    background-color: darkgreen;
+    color: lightgreen;
+}
