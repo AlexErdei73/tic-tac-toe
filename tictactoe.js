@@ -210,13 +210,22 @@ const displayControl = function(){
         divNameB.textContent = nameB;
     }
 
-    return {render, stopGame, resetGame, showMessage, showScores, showNames};
+    function showNextPlayer(name){
+        if (name == divNameA.textContent) {
+            divNameA.style = 'color: lightgreen; background: darkred;';
+            divNameB.style = '';
+        } else {
+            divNameB.style = 'color: lightgreen; background: olive;';
+            divNameA.style = '';
+        }
+    }
+
+    return {render, stopGame, resetGame, showMessage, showScores, showNames, showNextPlayer};
 }();
 
 
 function player(name, char){
     let score = 0;
-    let isNext = false;
 
     function incScore(){
         score++;
@@ -240,6 +249,7 @@ const game = function(){
     let playerNext = playerA;
 
     displayControl.render(gameBoard);
+    displayControl.showNextPlayer(playerNext.name);
 
     function swapPlayer(){
         const winner = gameBoard.findWinner();
@@ -250,6 +260,7 @@ const game = function(){
             } else {
                 playerNext = playerA;
             }
+        displayControl.showNextPlayer(playerNext.name);
     }
 
     function showScores(){
