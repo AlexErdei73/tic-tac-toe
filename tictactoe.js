@@ -86,10 +86,20 @@ const gameBoard = function(){
         board = [['','',''],
                  ['','',''],
                  ['','','']];
-        console.table(board);
     }
 
-    return {isFieldEmpty, setField, getField, findWinner, erase};
+    function stepComputer() {
+        let col = 0;
+        let row = 0;
+        do {
+            col = Math.floor(3 * Math.random());
+            row = Math.floor(3 * Math.random());
+        } 
+        while (!isFieldEmpty(col, row));
+        setField(col, row, 'o');
+    }
+
+    return {isFieldEmpty, setField, getField, findWinner, erase, stepComputer};
 }();
 
 
@@ -97,6 +107,7 @@ const displayControl = function(){
     const board = document.querySelector('.gameBoard');
     const btnStart = document.querySelector('#start');
     const btnReset = document.querySelector('#reset');
+    const btnAi = document.querySelector('#ai');
     const msg = document.querySelector('.message');
     const inputA = document.querySelector('input#a');
     const inputB = document.querySelector('input#b');
@@ -108,6 +119,7 @@ const displayControl = function(){
 
     btnStart.addEventListener('click', onClickStart);
     btnReset.addEventListener('click', onClickReset);
+    btnAi.addEventListener('click', onClickAi);
 
     function isBoardReady(){
         if (board.childElementCount == 0) {
@@ -205,9 +217,21 @@ const displayControl = function(){
         onClickStart();
     }
 
+    function onClickAi(){
+        if (divNameB.textContent == 'Computer') {
+            divNameB.textContent = game.playerB.name;
+            game.playerB.isComputer = false;
+        } else {
+            divNameB.textContent = 'Computer';
+            game.playerB.isComputer = true;
+        }
+    }
+
     function showNames(nameA, nameB){
         divNameA.textContent = nameA;
-        divNameB.textContent = nameB;
+        if (divNameB.textContent != 'Computer') {
+            divNameB.textContent = nameB;
+        }
     }
 
     function showNextPlayer(name){
@@ -226,6 +250,7 @@ const displayControl = function(){
 
 function player(name, char){
     let score = 0;
+    let isComputer = false;
 
     function incScore(){
         score++;
@@ -239,7 +264,7 @@ function player(name, char){
         return score;
     }
 
-    return {name, char, incScore, delScore, getScore};
+    return {name, char, isComputer, incScore, delScore, getScore};
 }
 
 
@@ -251,15 +276,31 @@ const game = function(){
     displayControl.render(gameBoard);
     displayControl.showNextPlayer(playerNext.name);
 
-    function swapPlayer(){
+    function isWinner(){
         const winner = gameBoard.findWinner();
         if (winner != '') {
             gameOver(winner);
-        } else if (playerNext == playerA) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function swapPlayer(){
+        if (!isWinner()) {
+            if (playerNext == playerA) {
                 playerNext = playerB;
+                if (playerB.isComputer) {
+                    displayControl.showNextPlayer(playerNext.name);
+                    gameBoard.stepComputer();
+                    displayControl.render(gameBoard);
+                    isWinner();
+                    playerNext = playerA;
+                }
             } else {
                 playerNext = playerA;
             }
+        }
         displayControl.showNextPlayer(playerNext.name);
     }
 
@@ -273,7 +314,11 @@ const game = function(){
         if (winner == 'tie') {
             message = 'It is a tie!';
         } else {
-            message = playerNext.name + ' is the winner!';
+            if (playerNext.isComputer) {
+                message = 'Computer is the winner!';
+            } else {
+                message = playerNext.name + ' is the winner!';    
+            }
             playerNext.incScore();
             showScores();
         }
@@ -295,5 +340,5 @@ const game = function(){
         showScores();
     }
 
-    return {swapPlayer, nextPlayer, reset};
+    return {swapPlayer, playerB, nextPlayer, reset};
 }();
