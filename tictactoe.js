@@ -1,12 +1,14 @@
 const gameBoard = function(){
 
-    let board;
-    erase();
+    const n = 3;
+    const create = (amount) => new Array(amount).fill('');
+    const matrix = (rows, cols) => create(cols).map((o, i) => create(rows))
+    let board = matrix(n, n);
 
     function isFieldExistant(col, row){
         let result = false;
-        if (col >= 0 && col <= 2) {
-            if (row >= 0 && row <= 2) {
+        if (col >= 0 && col < n) {
+            if (row >= 0 && row < n) {
                 result = true;
             }
         }
@@ -28,6 +30,12 @@ const gameBoard = function(){
         if (isFieldEmpty(col, row)) {
             board[row][col] = char;
         } 
+    }
+
+    function deleteField(col, row){
+        if (isFieldExistant) {
+            board[row][col] = '';
+        }
     }
 
     function getField(col, row){
@@ -53,8 +61,8 @@ const gameBoard = function(){
         let winner = '';
         let isBoardFull = true;
 
-        for (let col = 0; col <= 2; col++){
-            for (let row = 0; row <= 2; row++){
+        for (let col = 0; col < n; col++){
+            for (let row = 0; row < n; row++){
                 char = getField(col, row);
                 if (char != '') {
                     for (let i = 0; i < 8; i++){
@@ -83,23 +91,88 @@ const gameBoard = function(){
     }
 
     function erase(){
-        board = [['','',''],
-                 ['','',''],
-                 ['','','']];
+       board = matrix(n, n); 
     }
 
     function stepComputer() {
         let col = 0;
         let row = 0;
         do {
-            col = Math.floor(3 * Math.random());
-            row = Math.floor(3 * Math.random());
+            col = Math.floor(n * Math.random());
+            row = Math.floor(n * Math.random());
         } 
         while (!isFieldEmpty(col, row));
         setField(col, row, 'o');
     }
 
-    return {isFieldEmpty, setField, getField, findWinner, erase, stepComputer};
+    function minimax(depth, isPlayerComputer) {
+        const winner = findWinner(board);
+        let value = 0;
+        let char = '';
+        let newValue = 0;
+        let isTerminalNode = true;
+        switch (winner) {
+            case 'x':
+                value = -1;
+            break;
+            case 'o':
+                value = 1;
+            break;
+            case 'tie':
+                value = 0;
+            break;
+            case '':
+                isTerminalNode = false;
+            break;
+        }
+        if (depth == 0 || isTerminalNode) {
+            return value;
+        } else {
+            if (isPlayerComputer) {
+                value = -1;
+                char = 'o';
+            } else {
+                value = 1;
+                char = 'x';
+            }
+            for (let col = 0; col < n; col++){
+                for (let row = 0; row < n; row++){
+                    if (isFieldEmpty(col, row)) {
+                        setField(col, row, char);
+                        newValue = minimax(depth - 1, !isPlayerComputer);
+                        if ((newValue > value && isPlayerComputer) || (newValue < value && !isPlayerComputer)) {
+                            value = newValue;
+                        }
+                        deleteField(col, row);
+                    }
+                }
+            }
+            return value;
+        }
+    }
+
+    function stepComputerSmart(){
+        let move = [];
+        value = -1;
+        for (let col = 0; col < n; col++){
+            for (let row = 0; row < n; row++){
+                if (isFieldEmpty(col, row)) {
+                    setField(col, row, 'o');
+                    newValue = minimax(n*n - 1, false);
+                    if (newValue > value) {
+                        value = newValue;
+                    }
+                    deleteField(col, row);
+                    move.push({col, row, value});
+                }
+            }
+        }
+        move.sort((move1, move2) => move2.value - move1.value);
+        const bestMove = move[0];
+        setField(bestMove.col, bestMove.row, 'o');
+    }
+
+    return {n, isFieldEmpty, setField, getField, findWinner, erase, stepComputer, stepComputerSmart};
 }();
 
 
@@ -140,8 +213,8 @@ const displayControl = function(){
 
     function createBoard(){
         if (isBoardReady()) return
-        for (let row = 0; row <= 2; row++) {
-            for (let col = 0; col <= 2; col++) {
+        for (let row = 0; row < gameBoard.n; row++) {
+            for (let col = 0; col < gameBoard.n; col++) {
                 createField(col, row);
             }
         }
@@ -292,7 +365,7 @@ const game = function(){
                 playerNext = playerB;
                 if (playerB.isComputer) {
                     displayControl.showNextPlayer(playerNext.name);
-                    gameBoard.stepComputer();
+                    gameBoard.stepComputerSmart();
                     displayControl.render(gameBoard);
                     isWinner();
                     playerNext = playerA;
