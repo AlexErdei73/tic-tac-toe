@@ -1,6 +1,7 @@
 const gameBoard = function(){
 
     const n = 3;
+    const maxDepth = n*n - 1;
     const create = (amount) => new Array(amount).fill('');
     const matrix = (rows, cols) => create(cols).map((o, i) => create(rows))
     let board = matrix(n, n);
@@ -33,7 +34,7 @@ const gameBoard = function(){
     }
 
     function deleteField(col, row){
-        if (isFieldExistant) {
+        if (isFieldExistant(col, row)) {
             board[row][col] = '';
         }
     }
@@ -111,6 +112,7 @@ const gameBoard = function(){
         let char = '';
         let newValue = 0;
         let isTerminalNode = true;
+        let bestMove;
         switch (winner) {
             case 'x':
                 value = -1;
@@ -142,33 +144,22 @@ const gameBoard = function(){
                         newValue = minimax(depth - 1, !isPlayerComputer);
                         if ((newValue > value && isPlayerComputer) || (newValue < value && !isPlayerComputer)) {
                             value = newValue;
+                            bestMove = {col, row, value};
                         }
                         deleteField(col, row);
                     }
                 }
             }
-            return value;
+            if (depth == maxDepth) {
+                return bestMove;
+            } else {
+                return value;
+            }
         }
     }
 
     function stepComputerSmart(){
-        let move = [];
-        value = -1;
-        for (let col = 0; col < n; col++){
-            for (let row = 0; row < n; row++){
-                if (isFieldEmpty(col, row)) {
-                    setField(col, row, 'o');
-                    newValue = minimax(n*n - 1, false);
-                    if (newValue > value) {
-                        value = newValue;
-                    }
-                    deleteField(col, row);
-                    move.push({col, row, value});
-                }
-            }
-        }
-        move.sort((move1, move2) => move2.value - move1.value);
-        const bestMove = move[0];
+        const bestMove = minimax(maxDepth, true); 
         setField(bestMove.col, bestMove.row, 'o');
     }
 
