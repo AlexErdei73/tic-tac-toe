@@ -216,7 +216,7 @@ const displayControl = function(){
         if (char == 'x') {
             div.style = 'text-shadow:0 0 0 darkred';
         } else {
-            div.style = 'text-shadow:0 0 0 olive';
+            div.style = 'text-shadow:0 0 0 rgb(0, 32, 0)';
         }
     }
 
@@ -303,7 +303,7 @@ const displayControl = function(){
             divNameA.style = 'color: lightgreen; background: darkred;';
             divNameB.style = '';
         } else {
-            divNameB.style = 'color: lightgreen; background: olive;';
+            divNameB.style = 'color: lightgreen; background: rgb(0, 32, 0);';
             divNameA.style = '';
         }
     }
