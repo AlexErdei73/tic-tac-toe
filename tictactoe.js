@@ -1,50 +1,182 @@
+function matrix(col, row) {
+    const _create = (amount) => new Array(amount).fill(0);
+    const _matrix = (rows, cols) => _create(cols).map((o, i) => _create(rows));
+    const _storage = _matrix(row, col);
+
+    function _isElementDefined(cols, rows){
+        let result = false;
+        if (cols >= 0 && cols < col) {
+            if (rows >= 0 && rows < row) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    function getElement(cols, rows){
+        if (!_isElementDefined(cols, rows)) return 
+        return _storage[rows][cols];
+    }
+
+    function setElement(cols, rows, element){
+        if (!_isElementDefined(cols, rows)) return 
+        _storage[rows][cols] = element;
+    }
+
+    function getMatrix(){
+        return _storage;
+    }
+
+    function fillUp(element){
+        for (let cols = 0; cols < col; cols++){
+            for (let rows = 0; rows < row; rows++){
+                _storage[rows][cols] = element;
+            }
+        }
+    }
+
+    return { col, row, getElement, setElement, getMatrix, fillUp }
+}
+
 const gameBoard = function(){
 
-    const n = 3;
-    const maxDepth = n*n - 1;
-    const create = (amount) => new Array(amount).fill('');
-    const matrix = (rows, cols) => create(cols).map((o, i) => create(rows))
-    let board = matrix(n, n);
-
-    function isFieldExistant(col, row){
-        let result = false;
-        if (col >= 0 && col < n) {
-            if (row >= 0 && row < n) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    function isFieldEmpty(col, row){
-        let result = false;
-        if (isFieldExistant(col, row)) {
-            if (board[row][col] == '') {
-                result = true;
-            }
-        }
-        return result;
-    }
+    const _n = 3;
+    
+    let _board = matrix(_n, _n);
 
     function setField(col, row, char){
-        if (char != 'x' && char != 'o') return
-        if (isFieldEmpty(col, row)) {
-            board[row][col] = char;
-        } 
-    }
-
-    function deleteField(col, row){
-        if (isFieldExistant(col, row)) {
-            board[row][col] = '';
-        }
+        _board.setElement(col, row, char);   
     }
 
     function getField(col, row){
-        if (!isFieldExistant(col, row)) return 
-        return board[row][col];
+        return _board.getElement(col, row);
     }
 
-    function findWinner(){
+    function erase(){
+       _board.fillUp(''); 
+    }
+
+    function getN(){
+        return _n;
+    }
+
+    function getBoard(){
+        return _board.getMatrix();
+    }
+
+    erase();
+    return { getN, setField, getField, erase, getBoard };
+}();
+
+const displayBoard = function(board){
+
+    const n = board.getN();
+
+    function _getField(col, row){
+        return board.getField(col, row);
+    }
+
+    function _move(col, row){
+        gameControl.move(col, row);
+    }
+
+    const gameBoardDiv = document.querySelector('.gameBoard');
+    let isGameOver = false;
+
+    function _createField(col, row){
+        const div = document.createElement('div');
+        div.classList.add('field');
+        div.setAttribute('row',row);
+        div.setAttribute('col',col);
+        gameBoardDiv.appendChild(div);
+        div.addEventListener('click', _onClick);
+    }
+
+    function _createBoard(n){
+        for (let row = 0; row < n; row++) {
+            for (let col = 0; col < n; col++) {
+                _createField(col, row);
+            }
+        }
+    }
+
+    function _fillInField(char, div){
+        div.textContent = char.toUpperCase();
+    }
+
+    function _styleField(char, div){
+        if (char == 'x') {
+            div.style = 'text-shadow:0 0 0 darkred';
+        } else {
+            div.style = 'text-shadow:0 0 0 rgb(0, 32, 0)';
+        }
+    }
+
+    function render(){
+        const divs = document.querySelectorAll('.field');
+        divs.forEach(div => {
+            const col = div.getAttribute('col');
+            const row = div.getAttribute('row');
+            const char = _getField(col, row);
+            _fillInField(char, div);
+            _styleField(char, div);
+        });
+    }
+
+    function _onClick(e){
+        if (isGameOver) return
+        const div = e.target;
+        const row = div.getAttribute('row');
+        const col = div.getAttribute('col');
+        if (_getField(col, row) == '') {
+            _move(col, row);
+        }
+    }
+
+    _createBoard(n);
+    return { render };
+}(gameBoard);
+
+const displayPlayers = function(){
+
+    const msg = document.querySelector('.message');
+    const divScoreA = document.querySelector('.score#a');
+    const divScoreB = document.querySelector('.score#b');
+    const divNameA = document.querySelector('.name#a');
+    const divNameB = document.querySelector('.name#b');
+
+    function showMessage(message){
+        msg.textContent = message;
+    }
+
+    function showScores(scoreA, scoreB){
+        divScoreA.textContent = scoreA;
+        divScoreB.textContent = scoreB;
+    }
+
+    function showNames(nameA, nameB){
+        divNameA.textContent = nameA;
+        divNameB.textContent = nameB;   
+    }
+
+    function showNextPlayer(name){
+        if (name == divNameA.textContent) {
+            divNameA.style = 'color: lightgreen; background: darkred;';
+            divNameB.style = '';
+        } else {
+            divNameB.style = 'color: lightgreen; background: rgb(0, 32, 0);';
+            divNameA.style = '';
+        }
+    }
+
+    return { showMessage, showScores, showNames, showNextPlayer }
+}();
+
+const boardEvaluation = function(gameboard){
+
+    const _n = gameboard.getN();
+
+    function winner(board){
 
         const  directionVectors =  [{'col': 1, 'row':  0},
                                     {'col': 1, 'row':  1},
@@ -61,18 +193,20 @@ const gameBoard = function(){
         let count = 0;
         let winner = '';
         let isBoardFull = true;
-
-        for (let col = 0; col < n; col++){
-            for (let row = 0; row < n; row++){
-                char = getField(col, row);
+        let out = false;
+        for (let col = 0; col < _n; col++){
+            for (let row = 0; row < _n; row++){
+                char = board[row][col];
                 if (char != '') {
                     for (let i = 0; i < 8; i++){
                         count = 0;
                         newcol = col;
                         newrow = row;
-                        while (count < 3 && char == getField(newcol, newrow)){
+                        out = false;
+                        while (count < 3 && !out && char == board[newrow][newcol]){
                             newcol = newcol + directionVectors[i].col;
                             newrow = newrow + directionVectors[i].row;
+                            out = newrow < 0 || newrow >= _n || newcol < 0 || newcol >= _n;
                             count++;
                         }
                         if (count == 3) {
@@ -91,29 +225,61 @@ const gameBoard = function(){
         }
     }
 
-    function erase(){
-       board = matrix(n, n); 
+    return { winner }
+}(gameBoard);
+
+function player(name, char){
+    let score = 0;
+
+    function incScore(){
+        score++;
     }
 
-    function stepComputer() {
+    function delScore(){
+        score = 0;
+    }
+
+    function getScore(){
+        return score;
+    }
+
+    return {name, char, incScore, delScore, getScore};
+}
+
+const computer = function(board, eval){
+
+    const n = board.getN();
+    const _maxDepth = n*n - 1;
+    let gameboard;
+
+    function _getBoard(){
+        gameboard = board.getBoard();
+    }
+
+    function winner(gboard){
+        return eval.winner(gboard);
+    }
+
+    function randomMove() {
         let col = 0;
         let row = 0;
+        _getBoard();
         do {
             col = Math.floor(n * Math.random());
             row = Math.floor(n * Math.random());
         } 
-        while (!isFieldEmpty(col, row));
-        setField(col, row, 'o');
+        while (gameboard[row][col] != '');
+        return { col, row }
     }
 
-    function minimax(depth, isPlayerComputer) {
-        const winner = findWinner(board);
+    function _minimax(depth, isPlayerComputer) {
+        const win = winner(gameboard);
         let value = 0;
         let char = '';
         let newValue = 0;
         let isTerminalNode = true;
         let bestMove;
-        switch (winner) {
+        switch (win) {
             case 'x':
                 value = -1;
             break;
@@ -139,18 +305,18 @@ const gameBoard = function(){
             }
             for (let col = 0; col < n; col++){
                 for (let row = 0; row < n; row++){
-                    if (isFieldEmpty(col, row)) {
-                        setField(col, row, char);
-                        newValue = minimax(depth - 1, !isPlayerComputer);
+                    if (gameboard[row][col] == '') {
+                        gameboard[row][col] = char;
+                        newValue = _minimax(depth - 1, !isPlayerComputer);
                         if ((newValue > value && isPlayerComputer) || (newValue < value && !isPlayerComputer)) {
                             value = newValue;
                             bestMove = {col, row, value};
                         }
-                        deleteField(col, row);
+                        gameboard[row][col] = '';
                     }
                 }
             }
-            if (depth == maxDepth) {
+            if (depth == _maxDepth) {
                 return bestMove;
             } else {
                 return value;
@@ -158,251 +324,234 @@ const gameBoard = function(){
         }
     }
 
-    function stepComputerSmart(){
-        const bestMove = minimax(maxDepth, true); 
-        setField(bestMove.col, bestMove.row, 'o');
+    function bestMove(){
+        _getBoard();
+        return _minimax(_maxDepth, true);
     }
 
-    return {n, isFieldEmpty, setField, getField, findWinner, erase, stepComputer, stepComputerSmart};
-}();
+    return { randomMove, bestMove }
+}(gameBoard, boardEvaluation);
 
+const players = function(evaluation){
 
-const displayControl = function(){
-    const board = document.querySelector('.gameBoard');
-    const btnStart = document.querySelector('#start');
-    const btnReset = document.querySelector('#reset');
-    const btnAi = document.querySelector('#ai');
-    const msg = document.querySelector('.message');
-    const inputA = document.querySelector('input#a');
-    const inputB = document.querySelector('input#b');
-    const divScoreA = document.querySelector('.score#a');
-    const divScoreB = document.querySelector('.score#b');
-    const divNameA = document.querySelector('.name#a');
-    const divNameB = document.querySelector('.name#b');
-    let isGameOver = false;
-
-    btnStart.addEventListener('click', onClickStart);
-    btnReset.addEventListener('click', onClickReset);
-    btnAi.addEventListener('click', onClickAi);
-
-    function isBoardReady(){
-        if (board.childElementCount == 0) {
-            return false;
-        } else {
-            return true;
-        }
+    function _winner(){
+        return evaluation.winner(gameBoard.getBoard());
     }
 
-    function createField(col, row){
-        const div = document.createElement('div');
-        div.classList.add('field');
-        div.setAttribute('row',row);
-        div.setAttribute('col',col);
-        board.appendChild(div);
-        div.addEventListener('click', onClick);
-    }
-
-    function createBoard(){
-        if (isBoardReady()) return
-        for (let row = 0; row < gameBoard.n; row++) {
-            for (let col = 0; col < gameBoard.n; col++) {
-                createField(col, row);
-            }
-        }
-    }
-
-    function styleField(col, row, char, div){
-        div.textContent = char.toUpperCase();
-        if (char == 'x') {
-            div.style = 'text-shadow:0 0 0 darkred';
-        } else {
-            div.style = 'text-shadow:0 0 0 rgb(0, 32, 0)';
-        }
-    }
-
-    function render(board){
-        if (!isBoardReady()) {
-            createBoard();
-        }
-        const divs = document.querySelectorAll('.field');
-        divs.forEach(div => {
-            const col = div.getAttribute('col');
-            const row = div.getAttribute('row');
-            const char = board.getField(col, row);
-            styleField(col, row, char, div);
-        })
-    }
-
-    function onClick(e){
-        if (isGameOver) return
-        const div = e.target;
-        const row = div.getAttribute('row');
-        const col = div.getAttribute('col');
-        const char = game.nextPlayer().char;
-        if (gameBoard.isFieldEmpty(col, row)) {
-            gameBoard.setField(col, row, char);
-            styleField(col, row, char, div);
-            game.swapPlayer();
-        }
-    }
-
-    function stopGame(){
-        isGameOver = true;
-    }
-
-    function resetGame(){
-        isGameOver = false;
-        deleteMessage();
-    }
-
-    function showMessage(message){
-        msg.textContent = message;
-    }
-
-    function deleteMessage(){
-        msg.textContent = '';
-    }
-
-    function showScores(scoreA, scoreB){
-        divScoreA.textContent = scoreA.toString();
-        divScoreB.textContent = scoreB.toString();
-    }
-
-    function onClickStart(){
-        gameBoard.erase();
-        render(gameBoard);
-        resetGame();
-    }
-
-    function onClickReset(){
-        const nameA = inputA.value;
-        const nameB = inputB.value;
-        game.reset(nameA, nameB);
-        onClickStart();
-    }
-
-    function onClickAi(){
-        if (divNameB.textContent == 'Computer') {
-            divNameB.textContent = game.playerB.name;
-            game.playerB.isComputer = false;
-        } else {
-            divNameB.textContent = 'Computer';
-            game.playerB.isComputer = true;
-        }
-    }
-
-    function showNames(nameA, nameB){
-        divNameA.textContent = nameA;
-        if (divNameB.textContent != 'Computer') {
-            divNameB.textContent = nameB;
-        }
-    }
-
-    function showNextPlayer(name){
-        if (name == divNameA.textContent) {
-            divNameA.style = 'color: lightgreen; background: darkred;';
-            divNameB.style = '';
-        } else {
-            divNameB.style = 'color: lightgreen; background: rgb(0, 32, 0);';
-            divNameA.style = '';
-        }
-    }
-
-    return {render, stopGame, resetGame, showMessage, showScores, showNames, showNextPlayer};
-}();
-
-
-function player(name, char){
-    let score = 0;
-    let isComputer = false;
-
-    function incScore(){
-        score++;
-    }
-
-    function delScore(){
-        score = 0;
-    }
-
-    function getScore(){
-        return score;
-    }
-
-    return {name, char, isComputer, incScore, delScore, getScore};
-}
-
-
-const game = function(){
     const playerA = player('Player A','x');
-    const playerB = player('Player B','o');
-    let playerNext = playerA;
+    const human = player('Player B','o');
+    const _computer = player('Computer','o');
+    let _playerB = human;
+    let _playerNext = playerA;
 
-    displayControl.render(gameBoard);
-    displayControl.showNextPlayer(playerNext.name);
+    function getPlayerNext(){
+        return _playerNext;
+    }
 
-    function isWinner(){
-        const winner = gameBoard.findWinner();
-        if (winner != '') {
-            gameOver(winner);
+    function getOpponent(){
+        return _playerB;
+    }
+
+    function toggleOpponent(){
+        if (_playerB == human) {
+            _playerB = _computer;
+        } else {
+            _playerB = human;
+        }
+    }
+
+    function toggleNext(){
+        if (_playerNext == playerA) {
+            _playerNext = _playerB;
+        } else {
+            _playerNext = playerA;
+        }
+    }
+
+    return { playerA, human, getPlayerNext, getOpponent, toggleOpponent, toggleNext  }
+}(boardEvaluation);
+
+const gameControl = function(board, dispBoard, dispPlayers, players, eval){
+
+    function _setField(col, row, char){
+        return board.setField(col, row, char);
+    }
+
+    function _erase(){
+        board.erase();
+    }
+
+    function _render(){
+        dispBoard.render();
+    }
+
+    function _showNextPlayer(){
+        return dispPlayers.showNextPlayer(_getPlayerNext().name);
+    }
+
+    function _showScores(){
+        dispPlayers.showScores(_playerA.getScore(), _getPlayerB().getScore());
+    }
+
+    function _showMessage(){
+        dispPlayers.showMessage(_message(_win));
+    }
+
+    function _delMessage(){
+        dispPlayers.showMessage('');
+    }
+
+    function _showNames(){
+        dispPlayers.showNames(_playerA.name, _getPlayerB().name);
+    }
+
+    const _playerA = players.playerA;
+    const _human = players.human;
+
+    function _getPlayerB(){
+        return players.getOpponent();
+    } 
+
+    function _getPlayerNext(){
+        return players.getPlayerNext();
+    }
+
+    function toggleOpponent(){
+        _isComputerPlaying = !_isComputerPlaying;
+        players.toggleOpponent();
+    }
+
+    function _toggleNext(){
+       players.toggleNext();
+    }
+
+    function _winner(){
+        return eval.winner(board.getBoard());
+    }
+
+    function _incScore(){
+        if (_win != 'tie') {
+            _getPlayerNext().incScore();
+        }
+    }
+
+    function _computerMove(){
+        if (!_isComputerPlaying || _getPlayerNext() == _playerA) return
+            const bestMove = computer.bestMove();
+            move(bestMove.col, bestMove.row);
+    }
+
+    let _isGameStopped = false;
+    let _win = '';
+    let _isComputerPlaying = false;
+    _showNextPlayer();
+    _showScores();
+
+    function move(col, row){
+        if (_isGameStopped) return
+        const char = _getPlayerNext().char;
+        _setField(col, row, char);
+        _render();
+        if (_isGameOver()) {
+            _stop();
+            _showMessage();
+            _incScore();
+            _showScores();
+        } else {
+            _toggleNext();
+            _showNextPlayer();
+            _computerMove();
+        }
+    }
+
+    function _isGameOver(){
+        _win = _winner();
+        if (_win != '') {
             return true;
         } else {
             return false;
         }
     }
 
-    function swapPlayer(){
-        if (!isWinner()) {
-            if (playerNext == playerA) {
-                playerNext = playerB;
-                if (playerB.isComputer) {
-                    displayControl.showNextPlayer(playerNext.name);
-                    gameBoard.stepComputerSmart();
-                    displayControl.render(gameBoard);
-                    isWinner();
-                    playerNext = playerA;
-                }
-            } else {
-                playerNext = playerA;
-            }
-        }
-        displayControl.showNextPlayer(playerNext.name);
-    }
-
-    function showScores(){
-        displayControl.showScores(playerA.getScore(), playerB.getScore());
-    }
-
-    function gameOver(winner){
+    function _message(winner){
         let message = '';
-        displayControl.stopGame();
         if (winner == 'tie') {
             message = 'It is a tie!';
         } else {
-            if (playerNext.isComputer) {
-                message = 'Computer is the winner!';
-            } else {
-                message = playerNext.name + ' is the winner!';    
-            }
-            playerNext.incScore();
-            showScores();
+            message = _getPlayerNext().name + ' is the winner!';    
         }
-        displayControl.showMessage(message);
+        return message;
     }
 
-    function nextPlayer() {
-        return playerNext;
+    function _stop(){
+        _isGameStopped = true;
+    }
+
+    function start(){
+        _isGameStopped = false;
+        _delMessage();
+        _showScores();
+        if (_isComputerPlaying && _getPlayerNext() !=  _playerA) {
+            _toggleNext();
+            _showNames();
+        }
+        _erase();
+        _render();
     }
 
     function reset(nameA, nameB){
         if (nameA != nameB && nameA != '' && nameB != '') {
-            playerA.name = nameA;
-            playerB.name = nameB;
-            displayControl.showNames(playerA.name, playerB.name);
+            _playerA.name = nameA;
+            _human.name = nameB;
+            _showNames();
         }
-        playerA.delScore();
-        playerB.delScore();
-        showScores();
+        _playerA.delScore();
+        _getPlayerB().delScore();
+        _showScores();
+        start();
     }
 
-    return {swapPlayer, playerB, nextPlayer, reset};
-}();
+    return { move, start, reset, toggleOpponent };
+}(gameBoard, displayBoard, displayPlayers, players, boardEvaluation);
+
+const displayButtons = function(control){
+
+    function _start(){
+        control.start();
+    }
+
+    function _reset(nameA, nameB){
+        control.reset(nameA, nameB);
+    }
+
+    function _toggleOpponent(){
+        control.toggleOpponent();
+    }
+
+    const inputA = document.querySelector('input#a');
+    const inputB = document.querySelector('input#b');
+    const btnStart = document.querySelector('#start');
+    const btnReset = document.querySelector('#reset');
+    const btnAi = document.querySelector('#ai');
+    
+    btnStart.addEventListener('click', _onClickStart);
+    btnReset.addEventListener('click', _onClickReset);
+    btnAi.addEventListener('click', _onClickAi); 
+
+    function _onClickStart(){
+        _start();
+    }
+
+    function _onClickReset(){
+        const nameA = inputA.value;
+        const nameB = inputB.value;
+        _reset(nameA, nameB);
+    }
+
+    function _onClickAi(){
+        _toggleOpponent();
+        _onClickReset();
+    }
+    
+    return {};
+}(gameControl);
