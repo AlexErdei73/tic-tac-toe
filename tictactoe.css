@@ -6,6 +6,7 @@
 body {
     background-color: green;
     background-image: url("tic-tac-toe.jpg");
+    background-size: 165%;
 }
 
 h1 {
