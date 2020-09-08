@@ -32,6 +32,7 @@ h1 {
     height: 98px;
     border: 1px solid darkgreen;
     color: transparent;
+    user-select: none;
     float: left;
 }
 
