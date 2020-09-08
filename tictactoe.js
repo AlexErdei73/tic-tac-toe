@@ -494,29 +494,36 @@ const gameControl = function(board, dispBoard, dispPlayers, players, eval){
         _render();
     }
 
-    function reset(nameA, nameB){
+    function updateNames(nameA, nameB){
         if (nameA != nameB && nameA != '' && nameB != '') {
             _playerA.name = nameA;
             _human.name = nameB;
             _showNames();
         }
+    }
+
+    function reset(){
         _playerA.delScore();
         _getPlayerB().delScore();
         _showScores();
         start();
     }
 
-    return { move, start, reset, toggleOpponent };
+    return { move, start, updateNames, reset, toggleOpponent };
 }(gameBoard, displayBoard, displayPlayers, players, boardEvaluation);
 
 const displayButtons = function(control){
 
-    function _start(){
+    function _onClickStart(){
         control.start();
     }
 
-    function _reset(nameA, nameB){
-        control.reset(nameA, nameB);
+    function _updateNames(nameA, nameB){
+        control.updateNames(nameA, nameB);
+    }
+
+    function _onClickReset(){
+        control.reset();
     }
 
     function _toggleOpponent(){
@@ -529,18 +536,16 @@ const displayButtons = function(control){
     const btnReset = document.querySelector('#reset');
     const btnAi = document.querySelector('#ai');
     
+    inputA.addEventListener('blur', _changeNames);
+    inputB.addEventListener('blur', _changeNames);
     btnStart.addEventListener('click', _onClickStart);
     btnReset.addEventListener('click', _onClickReset);
     btnAi.addEventListener('click', _onClickAi); 
 
-    function _onClickStart(){
-        _start();
-    }
-
-    function _onClickReset(){
+    function _changeNames() {
         const nameA = inputA.value;
         const nameB = inputB.value;
-        _reset(nameA, nameB);
+        _updateNames(nameA, nameB);
     }
 
     function _onClickAi(){
