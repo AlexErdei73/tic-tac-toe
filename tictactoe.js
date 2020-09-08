@@ -538,6 +538,7 @@ const displayButtons = function(control){
     
     inputA.addEventListener('blur', _changeNames);
     inputB.addEventListener('blur', _changeNames);
+    window.addEventListener('keypress', _onKeyPress);
     btnStart.addEventListener('click', _onClickStart);
     btnReset.addEventListener('click', _onClickReset);
     btnAi.addEventListener('click', _onClickAi); 
@@ -551,6 +552,13 @@ const displayButtons = function(control){
     function _onClickAi(){
         _toggleOpponent();
         _onClickReset();
+    }
+
+    function _onKeyPress(e){
+        const key = e.key;
+        console.log(key);
+        if (key != 'Enter') return
+        _changeNames();
     }
     
     return {};
