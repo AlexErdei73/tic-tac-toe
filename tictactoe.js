@@ -4,13 +4,8 @@ function matrix(col, row) {
     const _storage = _matrix(row, col);
 
     function _isElementDefined(cols, rows){
-        let result = false;
-        if (cols >= 0 && cols < col) {
-            if (rows >= 0 && rows < row) {
-                result = true;
-            }
-        }
-        return result;
+        return (cols >= 0 && cols < col &&
+                rows >= 0 && rows < row); 
     }
 
     function getElement(cols, rows){
