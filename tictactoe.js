@@ -498,8 +498,8 @@ const gameControl = function(board, dispBoard, dispPlayers, players, eval){
         if (nameA != nameB && nameA != '' && nameB != '') {
             _playerA.name = nameA;
             _human.name = nameB;
-            _showNames();
         }
+        _showNames();
     }
 
     function reset(){
@@ -551,6 +551,7 @@ const displayButtons = function(control){
 
     function _onClickAi(){
         _toggleOpponent();
+        _changeNames();
         _onClickReset();
     }
 
